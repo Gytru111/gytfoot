@@ -90,18 +90,36 @@ async function updateOdds() {
 
     const matches = await dbAll<any>('SELECT * FROM matches WHERE status = $1 OR status = $2', ['upcoming', 'live']);
     for (const m of matches) {
-      const fluc = () => { const c = (Math.random() - 0.5) * 0.1; return 1 + c; };
-      const clamp = (v: number) => Math.max(1.01, Math.min(50, +v.toFixed(2)));
+      const h = m.odds_home, d = m.odds_draw, a = m.odds_away;
+      if (!h || !d || !a) continue;
+
+      const total = 1/h + 1/d + 1/a;
+      const tp = { h: (1/h)/total, d: (1/d)/total, a: (1/a)/total };
+
+      const delta = (Math.random() - 0.5) * 0.02;
+      const nh = Math.max(0.05, Math.min(0.95, tp.h + delta));
+      const rem = 1 - nh;
+      const df = tp.d / (tp.d + tp.a);
+      const nd = rem * df;
+      const na = rem * (1 - df);
+
+      const margin = 1.06;
+      const calc = (p: number) => Math.max(1.01, Math.min(50, +(1 / (p * margin)).toFixed(2)));
+      const oh = calc(nh), od = calc(nd), oa = calc(na);
+      const odh = calc(nh + nd), oda = calc(nd + na), odb = calc(nh + na);
+
+      const fav = Math.min(oh, oa);
+      const spread = Math.abs(oh - oa);
+      const likelyOver = spread < 1.5 && fav < 2.0;
+      const oo = +(likelyOver ? 1.6 + Math.random()*0.25 : 1.9 + Math.random()*0.35).toFixed(2);
+      const ou = +(likelyOver ? 2.0 + Math.random()*0.3 : 1.6 + Math.random()*0.2).toFixed(2);
+
+      const by = +(fav < 1.5 ? 2.0 + Math.random()*0.3 : 1.7 + Math.random()*0.2).toFixed(2);
+      const bn = +(fav < 1.5 ? 1.5 + Math.random()*0.15 : 1.85 + Math.random()*0.2).toFixed(2);
+
       await dbRun(
         'UPDATE matches SET odds_home=$1, odds_draw=$2, odds_away=$3, odds_double_home=$4, odds_double_away=$5, odds_double_both=$6, odds_over=$7, odds_under=$8, odds_btts_yes=$9, odds_btts_no=$10 WHERE id=$11',
-        [clamp(m.odds_home * fluc()), clamp(m.odds_draw * fluc()), clamp(m.odds_away * fluc()),
-         m.odds_double_home ? clamp(m.odds_double_home * fluc()) : null,
-         m.odds_double_away ? clamp(m.odds_double_away * fluc()) : null,
-         m.odds_double_both ? clamp(m.odds_double_both * fluc()) : null,
-         m.odds_over ? clamp(m.odds_over * fluc()) : null,
-         m.odds_under ? clamp(m.odds_under * fluc()) : null,
-         m.odds_btts_yes ? clamp(m.odds_btts_yes * fluc()) : null,
-         m.odds_btts_no ? clamp(m.odds_btts_no * fluc()) : null, m.id]
+        [oh, od, oa, odh, oda, odb, oo, ou, by, bn, m.id]
       );
     }
   } catch (e) {
