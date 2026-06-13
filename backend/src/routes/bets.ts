@@ -25,7 +25,7 @@ router.post('/', async (req: AuthRequest, res: Response) => {
     res.status(404).json({ error: 'Match non trouvé' });
     return;
   }
-  if (match.status !== 'upcoming') {
+  if (match.status !== 'upcoming' && match.status !== 'live') {
     res.status(400).json({ error: "Ce match n'est plus disponible pour les paris" });
     return;
   }
