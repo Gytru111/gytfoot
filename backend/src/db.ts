@@ -73,7 +73,7 @@ export async function initDatabase() {
         id SERIAL PRIMARY KEY,
         user_id INTEGER NOT NULL REFERENCES users(id),
         match_id INTEGER NOT NULL REFERENCES matches(id),
-        bet_type TEXT NOT NULL CHECK(bet_type IN ('home', 'draw', 'away')),
+        bet_type TEXT NOT NULL CHECK(bet_type IN ('home', 'draw', 'away', 'double_home', 'double_away', 'double_both', 'over', 'under', 'btts_yes', 'btts_no')),
         amount REAL NOT NULL,
         odds REAL NOT NULL,
         status TEXT NOT NULL DEFAULT 'pending' CHECK(status IN ('pending', 'won', 'lost')),
