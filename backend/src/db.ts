@@ -84,13 +84,6 @@ export async function initDatabase() {
     await client.query('CREATE INDEX IF NOT EXISTS idx_bets_user ON bets(user_id)');
     await client.query('CREATE INDEX IF NOT EXISTS idx_bets_match ON bets(match_id)');
     await client.query('CREATE INDEX IF NOT EXISTS idx_matches_status ON matches(status)');
-    await client.query(`CREATE TABLE IF NOT EXISTS _migrations (name TEXT PRIMARY KEY, run_at TIMESTAMP DEFAULT NOW())`);
-    const alreadyRun = await client.query(`SELECT 1 FROM _migrations WHERE name = 'fix_cest_to_utc'`);
-    if (alreadyRun.rowCount === 0) {
-      await client.query(`UPDATE matches SET start_time = start_time - INTERVAL '2 hours' WHERE id != 6`);
-      await client.query(`INSERT INTO _migrations (name) VALUES ('fix_cest_to_utc')`);
-      console.log('Migration: start_time converti CEST → UTC');
-    }
     console.log('Tables PostgreSQL créées');
   } finally {
     client.release();
