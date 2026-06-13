@@ -34,6 +34,8 @@ export default function Dashboard() {
 
   useEffect(() => {
     loadMatches();
+    const interval = setInterval(loadMatches, 30000);
+    return () => clearInterval(interval);
   }, [filter]);
 
   return (
