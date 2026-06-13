@@ -84,8 +84,9 @@ async function seedMatches() {
 
 const baseProbs = new Map<number, { h: number; d: number; a: number; o: number; u: number; by: number; bn: number }>();
 
-function anchorOdds(id: number, currentOdds: { h: number; d: number; a: number; o: number; u: number; by: number; bn: number }) {
-  const { h, d, a, o, u, by, bn } = currentOdds;
+function anchorOdds(id: number, m: any) {
+  const { odds_home: h, odds_draw: d, odds_away: a, odds_over: o, odds_under: u, odds_btts_yes: by, odds_btts_no: bn } = m;
+  if (!h || !d || !a) return null;
   const total = 1/h + 1/d + 1/a;
   if (!baseProbs.has(id)) {
     baseProbs.set(id, {
@@ -105,6 +106,7 @@ async function updateOdds() {
     const matches = await dbAll<any>('SELECT * FROM matches WHERE status = $1 OR status = $2', ['upcoming', 'live']);
     for (const m of matches) {
       const base = anchorOdds(m.id, m);
+      if (!base) continue;
       const delta = (Math.random() - 0.5) * 0.004;
       const nh = Math.max(base.h - 0.02, Math.min(base.h + 0.02, base.h + delta));
       const rem = 1 - nh;
