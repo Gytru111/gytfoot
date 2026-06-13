@@ -53,9 +53,17 @@ export async function initDatabase() {
       await client.query("ALTER TABLE matches ADD COLUMN odds_under REAL");
       await client.query("ALTER TABLE matches ADD COLUMN odds_btts_yes REAL");
       await client.query("ALTER TABLE matches ADD COLUMN odds_btts_no REAL");
-    } catch (e) {
-      // columns may already exist
-    }
+    } catch (e) {}
+
+    try {
+      await client.query("UPDATE matches SET odds_double_home = ROUND(0.92 / (1/odds_home + 1/odds_draw)::numeric, 2) WHERE odds_double_home IS NULL");
+      await client.query("UPDATE matches SET odds_double_away = ROUND(0.92 / (1/odds_draw + 1/odds_away)::numeric, 2) WHERE odds_double_away IS NULL");
+      await client.query("UPDATE matches SET odds_double_both = ROUND(0.92 / (1/odds_home + 1/odds_away)::numeric, 2) WHERE odds_double_both IS NULL");
+      await client.query("UPDATE matches SET odds_over = 1.85 WHERE odds_over IS NULL");
+      await client.query("UPDATE matches SET odds_under = 1.95 WHERE odds_under IS NULL");
+      await client.query("UPDATE matches SET odds_btts_yes = 1.90 WHERE odds_btts_yes IS NULL");
+      await client.query("UPDATE matches SET odds_btts_no = 1.90 WHERE odds_btts_no IS NULL");
+    } catch (e) {}
     await client.query(`
       CREATE TABLE IF NOT EXISTS bets (
         id SERIAL PRIMARY KEY,
