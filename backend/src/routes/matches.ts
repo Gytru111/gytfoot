@@ -51,8 +51,8 @@ router.patch('/:id/result', async (req: Request, res: Response) => {
     res.status(404).json({ error: 'Match non trouvé' });
     return;
   }
-  if (match.status !== 'live') {
-    res.status(400).json({ error: 'Seuls les matchs en direct peuvent être terminés' });
+  if (match.status !== 'live' && match.status !== 'finished') {
+    res.status(400).json({ error: 'Seuls les matchs en direct ou terminés peuvent être modifiés' });
     return;
   }
 

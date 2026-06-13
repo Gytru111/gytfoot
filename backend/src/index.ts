@@ -84,8 +84,9 @@ async function seedMatches() {
 
 async function updateOdds() {
   try {
-    const now = new Date().toISOString();
-    await dbRun("UPDATE matches SET status = 'live' WHERE status = 'upcoming' AND start_time::text <= $1", [now]);
+    await dbRun("UPDATE matches SET status = 'live' WHERE status = 'upcoming' AND start_time <= NOW()");
+
+    await dbRun("UPDATE matches SET status = 'finished' WHERE status = 'live' AND start_time + INTERVAL '2 hours' <= NOW()");
 
     const matches = await dbAll<any>('SELECT * FROM matches WHERE status = $1 OR status = $2', ['upcoming', 'live']);
     for (const m of matches) {
