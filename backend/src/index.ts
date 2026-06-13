@@ -56,20 +56,20 @@ async function seedMatches() {
   };
 
   const matches: any[] = [
-    { ...calc(1.40, 4.50, 7.00), home_team: 'Mexique', away_team: 'Afrique du Sud', odds_home: 1.40, odds_draw: 4.50, odds_away: 7.00, status: 'finished', home_score: 2, away_score: 0, start_time: '2026-06-11 21:00:00' },
-    { ...calc(2.50, 3.20, 2.90), home_team: 'Corée du Sud', away_team: 'Rép. Tchèque', odds_home: 2.50, odds_draw: 3.20, odds_away: 2.90, status: 'finished', home_score: 2, away_score: 1, start_time: '2026-06-12 02:00:00' },
-    { ...calc(1.95, 3.40, 3.80), home_team: 'Canada', away_team: 'Bosnie-Herzégovine', odds_home: 1.95, odds_draw: 3.40, odds_away: 3.80, status: 'finished', home_score: 2, away_score: 0, start_time: '2026-06-12 21:00:00' },
-    { ...calc(1.50, 4.00, 6.50), home_team: 'États-Unis', away_team: 'Paraguay', odds_home: 1.50, odds_draw: 4.00, odds_away: 6.50, status: 'finished', home_score: 2, away_score: 1, start_time: '2026-06-13 03:00:00' },
-    { ...calc(6.00, 4.20, 1.55), home_team: 'Qatar', away_team: 'Suisse', odds_home: 6.00, odds_draw: 4.20, odds_away: 1.55, start_time: '2026-06-13 21:00:00' },
-    { ...calc(1.60, 3.80, 5.50), home_team: 'Brésil', away_team: 'Maroc', odds_home: 1.60, odds_draw: 3.80, odds_away: 5.50, start_time: '2026-06-14 00:00:00' },
-    { ...calc(7.00, 4.50, 1.45), home_team: 'Haïti', away_team: 'Écosse', odds_home: 7.00, odds_draw: 4.50, odds_away: 1.45, start_time: '2026-06-14 03:00:00' },
-    { ...calc(1.08, 12.00, 30.00), home_team: 'Allemagne', away_team: 'Curaçao', odds_home: 1.08, odds_draw: 12.00, odds_away: 30.00, start_time: '2026-06-14 19:00:00' },
-    { ...calc(1.55, 3.80, 6.00), home_team: 'Pays-Bas', away_team: 'Japon', odds_home: 1.55, odds_draw: 3.80, odds_away: 6.00, start_time: '2026-06-14 22:00:00' },
-    { ...calc(1.48, 4.60, 7.25), home_team: 'France', away_team: 'Sénégal', odds_home: 1.48, odds_draw: 4.60, odds_away: 7.25, start_time: '2026-06-16 21:00:00' },
-    { ...calc(1.30, 5.00, 10.00), home_team: 'Belgique', away_team: 'Iran', odds_home: 1.30, odds_draw: 5.00, odds_away: 10.00, start_time: '2026-06-17 18:00:00' },
-    { ...calc(1.60, 3.80, 5.50), home_team: 'Angleterre', away_team: 'Croatie', odds_home: 1.60, odds_draw: 3.80, odds_away: 5.50, start_time: '2026-06-18 21:00:00' },
-    { ...calc(1.40, 4.50, 7.00), home_team: 'Argentine', away_team: 'Autriche', odds_home: 1.40, odds_draw: 4.50, odds_away: 7.00, start_time: '2026-06-22 17:00:00' },
-    { ...calc(1.43, 4.20, 3.40), home_team: 'Portugal', away_team: 'Colombie', odds_home: 1.43, odds_draw: 4.20, odds_away: 3.40, start_time: '2026-06-27 22:00:00' },
+    { ...calc(1.40, 4.50, 7.00), home_team: 'Mexique', away_team: 'Afrique du Sud', odds_home: 1.40, odds_draw: 4.50, odds_away: 7.00, status: 'finished', home_score: 2, away_score: 0, start_time: '2026-06-11 19:00:00' },
+    { ...calc(2.50, 3.20, 2.90), home_team: 'Corée du Sud', away_team: 'Rép. Tchèque', odds_home: 2.50, odds_draw: 3.20, odds_away: 2.90, status: 'finished', home_score: 2, away_score: 1, start_time: '2026-06-12 00:00:00' },
+    { ...calc(1.95, 3.40, 3.80), home_team: 'Canada', away_team: 'Bosnie-Herzégovine', odds_home: 1.95, odds_draw: 3.40, odds_away: 3.80, status: 'finished', home_score: 2, away_score: 0, start_time: '2026-06-12 19:00:00' },
+    { ...calc(1.50, 4.00, 6.50), home_team: 'États-Unis', away_team: 'Paraguay', odds_home: 1.50, odds_draw: 4.00, odds_away: 6.50, status: 'finished', home_score: 2, away_score: 1, start_time: '2026-06-13 01:00:00' },
+    { ...calc(6.00, 4.20, 1.55), home_team: 'Qatar', away_team: 'Suisse', odds_home: 6.00, odds_draw: 4.20, odds_away: 1.55, start_time: '2026-06-13 19:00:00' },
+    { ...calc(1.60, 3.80, 5.50), home_team: 'Brésil', away_team: 'Maroc', odds_home: 1.60, odds_draw: 3.80, odds_away: 5.50, start_time: '2026-06-13 22:00:00' },
+    { ...calc(7.00, 4.50, 1.45), home_team: 'Haïti', away_team: 'Écosse', odds_home: 7.00, odds_draw: 4.50, odds_away: 1.45, start_time: '2026-06-14 01:00:00' },
+    { ...calc(1.08, 12.00, 30.00), home_team: 'Allemagne', away_team: 'Curaçao', odds_home: 1.08, odds_draw: 12.00, odds_away: 30.00, start_time: '2026-06-14 17:00:00' },
+    { ...calc(1.55, 3.80, 6.00), home_team: 'Pays-Bas', away_team: 'Japon', odds_home: 1.55, odds_draw: 3.80, odds_away: 6.00, start_time: '2026-06-14 20:00:00' },
+    { ...calc(1.48, 4.60, 7.25), home_team: 'France', away_team: 'Sénégal', odds_home: 1.48, odds_draw: 4.60, odds_away: 7.25, start_time: '2026-06-16 19:00:00' },
+    { ...calc(1.30, 5.00, 10.00), home_team: 'Belgique', away_team: 'Iran', odds_home: 1.30, odds_draw: 5.00, odds_away: 10.00, start_time: '2026-06-17 16:00:00' },
+    { ...calc(1.60, 3.80, 5.50), home_team: 'Angleterre', away_team: 'Croatie', odds_home: 1.60, odds_draw: 3.80, odds_away: 5.50, start_time: '2026-06-18 19:00:00' },
+    { ...calc(1.40, 4.50, 7.00), home_team: 'Argentine', away_team: 'Autriche', odds_home: 1.40, odds_draw: 4.50, odds_away: 7.00, start_time: '2026-06-22 15:00:00' },
+    { ...calc(1.43, 4.20, 3.40), home_team: 'Portugal', away_team: 'Colombie', odds_home: 1.43, odds_draw: 4.20, odds_away: 3.40, start_time: '2026-06-27 20:00:00' },
   ];
 
   for (const m of matches) {
