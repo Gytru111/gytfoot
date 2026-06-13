@@ -6,11 +6,13 @@ import matchRoutes from './routes/matches';
 import betRoutes from './routes/bets';
 
 async function main() {
+  console.log('Initialisation de la base de données...');
   await initDatabase();
   console.log('Base de données initialisée');
 
   const app = express();
   const PORT = process.env.PORT || 3001;
+  console.log(`Port configuré: ${PORT}`);
 
   app.use(cors());
   app.use(express.json());
@@ -23,9 +25,19 @@ async function main() {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
   });
 
-  app.listen(PORT, () => {
-    console.log(`GytFoot API running on http://localhost:${PORT}`);
+  app.listen(Number(PORT), '0.0.0.0', () => {
+    console.log(`GytFoot API running on port ${PORT}`);
   });
 }
 
-main().catch(console.error);
+process.on('uncaughtException', (err) => {
+  console.error('UNCAUGHT EXCEPTION:', err);
+});
+process.on('unhandledRejection', (err) => {
+  console.error('UNHANDLED REJECTION:', err);
+});
+
+main().catch((err) => {
+  console.error('MAIN ERROR:', err);
+  process.exit(1);
+});
