@@ -82,6 +82,20 @@ async function seedMatches() {
   console.log(`${matches.length} matchs Coupe du Monde 2026 ajoutés !`);
 }
 
+const baseProbs = new Map<number, { h: number; d: number; a: number; o: number; u: number; by: number; bn: number }>();
+
+function anchorOdds(id: number, currentOdds: { h: number; d: number; a: number; o: number; u: number; by: number; bn: number }) {
+  const { h, d, a, o, u, by, bn } = currentOdds;
+  const total = 1/h + 1/d + 1/a;
+  if (!baseProbs.has(id)) {
+    baseProbs.set(id, {
+      h: (1/h)/total, d: (1/d)/total, a: (1/a)/total,
+      o: o ?? 1.85, u: u ?? 1.95, by: by ?? 1.90, bn: bn ?? 1.90,
+    });
+  }
+  return baseProbs.get(id)!;
+}
+
 async function updateOdds() {
   try {
     await dbRun("UPDATE matches SET status = 'live' WHERE status = 'upcoming' AND start_time <= NOW()");
@@ -90,16 +104,11 @@ async function updateOdds() {
 
     const matches = await dbAll<any>('SELECT * FROM matches WHERE status = $1 OR status = $2', ['upcoming', 'live']);
     for (const m of matches) {
-      const h = m.odds_home, d = m.odds_draw, a = m.odds_away;
-      if (!h || !d || !a) continue;
-
-      const total = 1/h + 1/d + 1/a;
-      const tp = { h: (1/h)/total, d: (1/d)/total, a: (1/a)/total };
-
-      const delta = (Math.random() - 0.5) * 0.02;
-      const nh = Math.max(0.05, Math.min(0.95, tp.h + delta));
+      const base = anchorOdds(m.id, m);
+      const delta = (Math.random() - 0.5) * 0.004;
+      const nh = Math.max(base.h - 0.02, Math.min(base.h + 0.02, base.h + delta));
       const rem = 1 - nh;
-      const df = tp.d / (tp.d + tp.a);
+      const df = base.d / (base.d + base.a);
       const nd = rem * df;
       const na = rem * (1 - df);
 
@@ -108,14 +117,10 @@ async function updateOdds() {
       const oh = calc(nh), od = calc(nd), oa = calc(na);
       const odh = calc(nh + nd), oda = calc(nd + na), odb = calc(nh + na);
 
-      const fav = Math.min(oh, oa);
-      const spread = Math.abs(oh - oa);
-      const likelyOver = spread < 1.5 && fav < 2.0;
-      const oo = +(likelyOver ? 1.6 + Math.random()*0.25 : 1.9 + Math.random()*0.35).toFixed(2);
-      const ou = +(likelyOver ? 2.0 + Math.random()*0.3 : 1.6 + Math.random()*0.2).toFixed(2);
-
-      const by = +(fav < 1.5 ? 2.0 + Math.random()*0.3 : 1.7 + Math.random()*0.2).toFixed(2);
-      const bn = +(fav < 1.5 ? 1.5 + Math.random()*0.15 : 1.85 + Math.random()*0.2).toFixed(2);
+      const oo = Math.max(1.2, Math.min(5.0, +(base.o + (Math.random() - 0.5) * 0.08).toFixed(2)));
+      const ou = Math.max(1.2, Math.min(5.0, +(base.u + (Math.random() - 0.5) * 0.08).toFixed(2)));
+      const by = Math.max(1.2, Math.min(5.0, +(base.by + (Math.random() - 0.5) * 0.08).toFixed(2)));
+      const bn = Math.max(1.2, Math.min(5.0, +(base.bn + (Math.random() - 0.5) * 0.08).toFixed(2)));
 
       await dbRun(
         'UPDATE matches SET odds_home=$1, odds_draw=$2, odds_away=$3, odds_double_home=$4, odds_double_away=$5, odds_double_both=$6, odds_over=$7, odds_under=$8, odds_btts_yes=$9, odds_btts_no=$10 WHERE id=$11',
