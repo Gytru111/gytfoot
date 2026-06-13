@@ -38,15 +38,16 @@ async function seedMatches() {
   }
 
   const calc = (h: number, d: number, a: number) => {
-    const margin = 0.92;
-    const fairHome = 1 / (1/h + 1/d + 1/a) / h;
+    const tp = 1/h + 1/d + 1/a;
+    const th = (1/h) / tp, td = (1/d) / tp, ta = (1/a) / tp;
+    const m = 1.06;
     const favWins = Math.min(h, a);
     const spread = Math.abs(h - a);
     const likelyOver = spread < 1.5;
     return {
-      odds_double_home: +(margin / (1/h + 1/d)).toFixed(2),
-      odds_double_away: +(margin / (1/d + 1/a)).toFixed(2),
-      odds_double_both: +(margin / (1/h + 1/a)).toFixed(2),
+      odds_double_home: +((1 / ((th + td) * m))).toFixed(2),
+      odds_double_away: +((1 / ((td + ta) * m))).toFixed(2),
+      odds_double_both: +((1 / ((th + ta) * m))).toFixed(2),
       odds_over: +(likelyOver ? 1.75 + Math.random()*0.2 : 2.0 + Math.random()*0.4).toFixed(2),
       odds_under: +(likelyOver ? 2.0 + Math.random()*0.3 : 1.65 + Math.random()*0.2).toFixed(2),
       odds_btts_yes: +(favWins < 1.5 ? 2.1 + Math.random()*0.3 : 1.7 + Math.random()*0.2).toFixed(2),

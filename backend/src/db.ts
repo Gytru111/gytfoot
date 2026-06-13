@@ -56,9 +56,13 @@ export async function initDatabase() {
     } catch (e) {}
 
     try {
-      await client.query("UPDATE matches SET odds_double_home = ROUND(0.92 / (1/odds_home + 1/odds_draw)::numeric, 2) WHERE odds_double_home IS NULL");
-      await client.query("UPDATE matches SET odds_double_away = ROUND(0.92 / (1/odds_draw + 1/odds_away)::numeric, 2) WHERE odds_double_away IS NULL");
-      await client.query("UPDATE matches SET odds_double_both = ROUND(0.92 / (1/odds_home + 1/odds_away)::numeric, 2) WHERE odds_double_both IS NULL");
+      await client.query(`
+        UPDATE matches SET
+          odds_double_home = ROUND((1.0 / (((1.0/odds_home) / (1.0/odds_home+1.0/odds_draw+1.0/odds_away) + (1.0/odds_draw) / (1.0/odds_home+1.0/odds_draw+1.0/odds_away)) * 1.06)::numeric, 2),
+          odds_double_away = ROUND((1.0 / (((1.0/odds_draw) / (1.0/odds_home+1.0/odds_draw+1.0/odds_away) + (1.0/odds_away) / (1.0/odds_home+1.0/odds_draw+1.0/odds_away)) * 1.06)::numeric, 2),
+          odds_double_both = ROUND((1.0 / (((1.0/odds_home) / (1.0/odds_home+1.0/odds_draw+1.0/odds_away) + (1.0/odds_away) / (1.0/odds_home+1.0/odds_draw+1.0/odds_away)) * 1.06)::numeric, 2)
+        WHERE odds_double_home IS NULL
+      `);
       await client.query("UPDATE matches SET odds_over = 1.85 WHERE odds_over IS NULL");
       await client.query("UPDATE matches SET odds_under = 1.95 WHERE odds_under IS NULL");
       await client.query("UPDATE matches SET odds_btts_yes = 1.90 WHERE odds_btts_yes IS NULL");
