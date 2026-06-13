@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import path from 'path';
-import { initDatabase, dbRun, dbGet } from './db';
+import { initDatabase, dbRun, dbGet, dbAll } from './db';
 import authRoutes from './routes/auth';
 import matchRoutes from './routes/matches';
 import betRoutes from './routes/bets';
@@ -71,9 +71,32 @@ process.on('unhandledRejection', (err) => {
   console.error('UNHANDLED REJECTION:', err);
 });
 
+function startOddsUpdater() {
+  setInterval(() => {
+    try {
+      const matches = dbAll<any>('SELECT id, odds_home, odds_draw, odds_away FROM matches WHERE status = ?', ['upcoming']);
+      for (const m of matches) {
+        const fluctuation = () => {
+          const change = (Math.random() - 0.5) * 0.1;
+          const factor = 1 + change;
+          return factor;
+        };
+        const newHome = Math.max(1.01, Math.min(50, +(m.odds_home * fluctuation()).toFixed(2)));
+        const newDraw = Math.max(1.01, Math.min(50, +(m.odds_draw * fluctuation()).toFixed(2)));
+        const newAway = Math.max(1.01, Math.min(50, +(m.odds_away * fluctuation()).toFixed(2)));
+        dbRun('UPDATE matches SET odds_home = ?, odds_draw = ?, odds_away = ? WHERE id = ?', [newHome, newDraw, newAway, m.id]);
+      }
+    } catch (e) {
+      console.error('Odds update error:', e);
+    }
+  }, 30000);
+  console.log('Service de mise à jour des cotes démarré (30s)');
+}
+
 initDatabase().then(() => {
   console.log('Base de données initialisée');
   seedMatches().catch((err) => console.error('Seed error:', err));
+  startOddsUpdater();
 }).catch((err) => {
   console.error('Database init error:', err);
 });
