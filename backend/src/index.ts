@@ -66,7 +66,10 @@ async function seedMatches() {
 
 async function updateOdds() {
   try {
-    const matches = await dbAll<any>('SELECT id, odds_home, odds_draw, odds_away FROM matches WHERE status = $1', ['upcoming']);
+    const now = new Date().toISOString();
+    await dbRun("UPDATE matches SET status = 'live' WHERE status = 'upcoming' AND start_time::text <= $1", [now]);
+
+    const matches = await dbAll<any>('SELECT id, odds_home, odds_draw, odds_away FROM matches WHERE status = $1 OR status = $2', ['upcoming', 'live']);
     for (const m of matches) {
       const fluctuation = () => {
         const change = (Math.random() - 0.5) * 0.1;
