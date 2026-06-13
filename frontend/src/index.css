@@ -322,6 +322,22 @@ input:focus, select:focus {
   color: #94a3b8;
 }
 
+.tab {
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  background: #0f172a;
+  color: #94a3b8;
+  border: 1px solid #334155;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  transition: all 0.2s;
+}
+.tab:hover { border-color: #3b82f6; color: #e2e8f0; }
+.tab.active { background: #1e3a5f; border-color: #3b82f6; color: #60a5fa; }
+
+.odds-btn.disabled { opacity: 0.4; cursor: not-allowed; }
+
 .match-card .match-score {
   font-size: 1.5rem;
   font-weight: 700;

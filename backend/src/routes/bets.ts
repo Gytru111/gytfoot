@@ -4,6 +4,21 @@ import { authenticateToken, AuthRequest } from '../middleware/auth';
 
 const router = Router();
 
+const VALID_BET_TYPES = ['home', 'draw', 'away', 'double_home', 'double_away', 'double_both', 'over', 'under', 'btts_yes', 'btts_no'];
+
+const ODDS_MAP: Record<string, string> = {
+  home: 'odds_home',
+  draw: 'odds_draw',
+  away: 'odds_away',
+  double_home: 'odds_double_home',
+  double_away: 'odds_double_away',
+  double_both: 'odds_double_both',
+  over: 'odds_over',
+  under: 'odds_under',
+  btts_yes: 'odds_btts_yes',
+  btts_no: 'odds_btts_no',
+};
+
 router.use(authenticateToken);
 
 router.post('/', async (req: AuthRequest, res: Response) => {
@@ -12,7 +27,7 @@ router.post('/', async (req: AuthRequest, res: Response) => {
     res.status(400).json({ error: 'Tous les champs sont requis' });
     return;
   }
-  if (!['home', 'draw', 'away'].includes(bet_type)) {
+  if (!VALID_BET_TYPES.includes(bet_type)) {
     res.status(400).json({ error: 'Type de pari invalide' });
     return;
   }
@@ -35,8 +50,12 @@ router.post('/', async (req: AuthRequest, res: Response) => {
     return;
   }
 
-  const oddsMap: Record<string, string> = { home: 'odds_home', draw: 'odds_draw', away: 'odds_away' };
-  const odds = match[oddsMap[bet_type]];
+  const oddsKey = ODDS_MAP[bet_type];
+  const odds = match[oddsKey];
+  if (!odds) {
+    res.status(400).json({ error: 'Cote non disponible pour ce type de pari' });
+    return;
+  }
 
   await dbRun('UPDATE users SET balance = balance - $1 WHERE id = $2', [amount, req.userId]);
   const result = await dbRun(

@@ -30,6 +30,13 @@ export async function initDatabase() {
         odds_home REAL NOT NULL,
         odds_draw REAL NOT NULL,
         odds_away REAL NOT NULL,
+        odds_double_home REAL,
+        odds_double_away REAL,
+        odds_double_both REAL,
+        odds_over REAL,
+        odds_under REAL,
+        odds_btts_yes REAL,
+        odds_btts_no REAL,
         status TEXT NOT NULL DEFAULT 'upcoming' CHECK(status IN ('upcoming', 'live', 'finished')),
         home_score INTEGER,
         away_score INTEGER,
@@ -37,6 +44,18 @@ export async function initDatabase() {
         created_at TIMESTAMP NOT NULL DEFAULT NOW()
       );
     `);
+
+    try {
+      await client.query("ALTER TABLE matches ADD COLUMN odds_double_home REAL");
+      await client.query("ALTER TABLE matches ADD COLUMN odds_double_away REAL");
+      await client.query("ALTER TABLE matches ADD COLUMN odds_double_both REAL");
+      await client.query("ALTER TABLE matches ADD COLUMN odds_over REAL");
+      await client.query("ALTER TABLE matches ADD COLUMN odds_under REAL");
+      await client.query("ALTER TABLE matches ADD COLUMN odds_btts_yes REAL");
+      await client.query("ALTER TABLE matches ADD COLUMN odds_btts_no REAL");
+    } catch (e) {
+      // columns may already exist
+    }
     await client.query(`
       CREATE TABLE IF NOT EXISTS bets (
         id SERIAL PRIMARY KEY,

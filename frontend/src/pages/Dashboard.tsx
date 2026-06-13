@@ -9,6 +9,13 @@ interface Match {
   odds_home: number;
   odds_draw: number;
   odds_away: number;
+  odds_double_home: number;
+  odds_double_away: number;
+  odds_double_both: number;
+  odds_over: number;
+  odds_under: number;
+  odds_btts_yes: number;
+  odds_btts_no: number;
   status: string;
   home_score: number | null;
   away_score: number | null;
