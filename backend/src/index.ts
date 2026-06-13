@@ -31,7 +31,7 @@ app.listen(Number(PORT), '0.0.0.0', () => {
 });
 
 async function seedMatches() {
-  const existing = dbGet('SELECT COUNT(*) as cnt FROM matches') as any;
+  const existing = await dbGet('SELECT COUNT(*)::int as cnt FROM matches') as any;
   if (existing && existing.cnt > 0) {
     console.log('Matchs déjà présents, seed ignoré.');
     return;
@@ -55,13 +55,36 @@ async function seedMatches() {
   ];
 
   for (const m of matches) {
-    dbRun(
-      'INSERT INTO matches (home_team, away_team, odds_home, odds_draw, odds_away, status, home_score, away_score, start_time) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+    await dbRun(
+      'INSERT INTO matches (home_team, away_team, odds_home, odds_draw, odds_away, status, home_score, away_score, start_time) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)',
       [m.home_team, m.away_team, m.odds_home, m.odds_draw, m.odds_away, m.status || 'upcoming', m.home_score ?? null, m.away_score ?? null, m.start_time]
     );
   }
 
   console.log(`${matches.length} matchs Coupe du Monde 2026 ajoutés !`);
+}
+
+async function updateOdds() {
+  try {
+    const matches = await dbAll<any>('SELECT id, odds_home, odds_draw, odds_away FROM matches WHERE status = $1', ['upcoming']);
+    for (const m of matches) {
+      const fluctuation = () => {
+        const change = (Math.random() - 0.5) * 0.1;
+        return 1 + change;
+      };
+      const newHome = Math.max(1.01, Math.min(50, +(m.odds_home * fluctuation()).toFixed(2)));
+      const newDraw = Math.max(1.01, Math.min(50, +(m.odds_draw * fluctuation()).toFixed(2)));
+      const newAway = Math.max(1.01, Math.min(50, +(m.odds_away * fluctuation()).toFixed(2)));
+      await dbRun('UPDATE matches SET odds_home = $1, odds_draw = $2, odds_away = $3 WHERE id = $4', [newHome, newDraw, newAway, m.id]);
+    }
+  } catch (e) {
+    console.error('Odds update error:', e);
+  }
+}
+
+function startOddsUpdater() {
+  setInterval(updateOdds, 30000);
+  console.log('Service de mise à jour des cotes démarré (30s)');
 }
 
 process.on('uncaughtException', (err) => {
@@ -71,32 +94,11 @@ process.on('unhandledRejection', (err) => {
   console.error('UNHANDLED REJECTION:', err);
 });
 
-function startOddsUpdater() {
-  setInterval(() => {
-    try {
-      const matches = dbAll<any>('SELECT id, odds_home, odds_draw, odds_away FROM matches WHERE status = ?', ['upcoming']);
-      for (const m of matches) {
-        const fluctuation = () => {
-          const change = (Math.random() - 0.5) * 0.1;
-          const factor = 1 + change;
-          return factor;
-        };
-        const newHome = Math.max(1.01, Math.min(50, +(m.odds_home * fluctuation()).toFixed(2)));
-        const newDraw = Math.max(1.01, Math.min(50, +(m.odds_draw * fluctuation()).toFixed(2)));
-        const newAway = Math.max(1.01, Math.min(50, +(m.odds_away * fluctuation()).toFixed(2)));
-        dbRun('UPDATE matches SET odds_home = ?, odds_draw = ?, odds_away = ? WHERE id = ?', [newHome, newDraw, newAway, m.id]);
-      }
-    } catch (e) {
-      console.error('Odds update error:', e);
-    }
-  }, 30000);
-  console.log('Service de mise à jour des cotes démarré (30s)');
-}
-
 initDatabase().then(() => {
   console.log('Base de données initialisée');
-  seedMatches().catch((err) => console.error('Seed error:', err));
+  return seedMatches();
+}).then(() => {
   startOddsUpdater();
 }).catch((err) => {
-  console.error('Database init error:', err);
+  console.error('Startup error:', err);
 });

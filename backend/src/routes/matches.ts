@@ -3,21 +3,19 @@ import { dbAll, dbGet, dbRun } from '../db';
 
 const router = Router();
 
-router.get('/', (req: Request, res: Response) => {
+router.get('/', async (req: Request, res: Response) => {
   const { status } = req.query;
   let matches;
-
   if (status) {
-    matches = dbAll('SELECT * FROM matches WHERE status = ? ORDER BY start_time ASC', [status as string]);
+    matches = await dbAll('SELECT * FROM matches WHERE status = $1 ORDER BY start_time ASC', [status as string]);
   } else {
-    matches = dbAll('SELECT * FROM matches ORDER BY start_time ASC');
+    matches = await dbAll('SELECT * FROM matches ORDER BY start_time ASC');
   }
-
   res.json(matches);
 });
 
-router.get('/:id', (req: Request, res: Response) => {
-  const match = dbGet('SELECT * FROM matches WHERE id = ?', [Number(req.params.id)]);
+router.get('/:id', async (req: Request, res: Response) => {
+  const match = await dbGet('SELECT * FROM matches WHERE id = $1', [Number(req.params.id)]);
   if (!match) {
     res.status(404).json({ error: 'Match non trouvé' });
     return;
@@ -25,41 +23,36 @@ router.get('/:id', (req: Request, res: Response) => {
   res.json(match);
 });
 
-router.patch('/:id/result', (req: Request, res: Response) => {
+router.patch('/:id/result', async (req: Request, res: Response) => {
   const { home_score, away_score } = req.body;
-
   if (home_score === undefined || away_score === undefined || home_score < 0 || away_score < 0) {
     res.status(400).json({ error: 'Scores requis (nombres positifs)' });
     return;
   }
-
-  const match = dbGet<any>('SELECT * FROM matches WHERE id = ?', [Number(req.params.id)]);
+  const match = await dbGet<any>('SELECT * FROM matches WHERE id = $1', [Number(req.params.id)]);
   if (!match) {
     res.status(404).json({ error: 'Match non trouvé' });
     return;
   }
-
   if (match.status !== 'upcoming') {
     res.status(400).json({ error: 'Ce match a déjà été joué' });
     return;
   }
-
   let result: string;
   if (home_score > away_score) result = 'home';
   else if (away_score > home_score) result = 'away';
   else result = 'draw';
 
-  dbRun('UPDATE matches SET status = ?, home_score = ?, away_score = ? WHERE id = ?', ['finished', home_score, away_score, match.id]);
-
-  const pendingBets = dbAll<any>('SELECT * FROM bets WHERE match_id = ? AND status = ?', [match.id, 'pending']);
+  await dbRun('UPDATE matches SET status = $1, home_score = $2, away_score = $3 WHERE id = $4', ['finished', home_score, away_score, match.id]);
+  const pendingBets = await dbAll<any>('SELECT * FROM bets WHERE match_id = $1 AND status = $2', [match.id, 'pending']);
 
   for (const bet of pendingBets) {
     if (bet.bet_type === result) {
       const payout = bet.amount * bet.odds;
-      dbRun('UPDATE bets SET status = ?, payout = ? WHERE id = ?', ['won', payout, bet.id]);
-      dbRun('UPDATE users SET balance = balance + ? WHERE id = ?', [payout, bet.user_id]);
+      await dbRun('UPDATE bets SET status = $1, payout = $2 WHERE id = $3', ['won', payout, bet.id]);
+      await dbRun('UPDATE users SET balance = balance + $1 WHERE id = $2', [payout, bet.user_id]);
     } else {
-      dbRun('UPDATE bets SET status = ?, payout = ? WHERE id = ?', ['lost', 0, bet.id]);
+      await dbRun('UPDATE bets SET status = $1, payout = $2 WHERE id = $3', ['lost', 0, bet.id]);
     }
   }
 
