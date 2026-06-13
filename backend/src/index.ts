@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import path from 'path';
 import { initDatabase, dbRun, dbGet } from './db';
 import authRoutes from './routes/auth';
 import matchRoutes from './routes/matches';
@@ -11,6 +12,7 @@ console.log(`Port configuré: ${PORT}`);
 
 app.use(cors());
 app.use(express.json());
+app.use(express.static(path.join(__dirname, '..', 'public')));
 
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
@@ -19,6 +21,10 @@ app.get('/api/health', (_req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/matches', matchRoutes);
 app.use('/api/bets', betRoutes);
+
+app.get('*', (_req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'public', 'index.html'));
+});
 
 app.listen(Number(PORT), '0.0.0.0', () => {
   console.log(`GytFoot API listening on port ${PORT}`);
