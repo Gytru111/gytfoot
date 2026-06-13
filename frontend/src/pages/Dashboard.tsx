@@ -47,12 +47,12 @@ export default function Dashboard() {
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+      <div className="page-header">
         <h2>Matchs de football</h2>
         <select
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
-          style={{ width: 'auto', padding: '0.5rem 1rem' }}
+          style={{ width: 'auto' }}
         >
           <option value="upcoming">À venir</option>
           <option value="live">En direct</option>
@@ -62,7 +62,7 @@ export default function Dashboard() {
       </div>
 
       {loading ? (
-        <p style={{ textAlign: 'center', color: '#64748b', padding: '2rem' }}>Chargement...</p>
+        <div className="loading-dots"><span /><span /><span /></div>
       ) : matches.length === 0 ? (
         <div className="empty-state">
           <h3>Aucun match</h3>
