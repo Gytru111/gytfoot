@@ -231,36 +231,22 @@ function startOddsUpdater() {
 
 async function syncSxBetOdds() {
   try {
-    const pairs = [
-      ['Allemagne', 'Curaçao'],
-      ['Belgique', 'Iran'],
-      ["Côte d'ivoire", 'Équateur'],
-      ['Brésil', 'Maroc'],
-      ['Argentine', 'Autriche'],
-      ['Espagne', 'Cap-Vert'],
-      ['Belgique', 'Égypte'],
-      ['Iran', 'Nouvelle-Zélande'],
-      ['Angleterre', 'Croatie'],
-      ['Ghana', 'Panama'],
-      ['Portugal', 'RD Congo'],
-    ];
-    for (const [home, away] of pairs) {
+    const matches = await dbAll<any>("SELECT id, home_team, away_team, odds_home, odds_draw, odds_away FROM matches WHERE status != 'finished'");
+    for (const m of matches) {
       try {
-        const sx = await fetchSxBetOdds(home, away);
+        const sx = await fetchSxBetOdds(m.home_team, m.away_team);
         if (!sx) continue;
-        const match = await dbGet<any>('SELECT id, odds_home, odds_draw, odds_away FROM matches WHERE home_team=$1 AND away_team=$2', [home, away]);
-        if (!match) continue;
-        const changed = match.odds_home !== sx.odds_home || match.odds_draw !== sx.odds_draw || match.odds_away !== sx.odds_away;
+        const changed = m.odds_home !== sx.odds_home || m.odds_draw !== sx.odds_draw || m.odds_away !== sx.odds_away;
         if (!changed) continue;
-        await dbRun('UPDATE matches SET odds_home=$1, odds_draw=$2, odds_away=$3 WHERE id=$4', [sx.odds_home, sx.odds_draw, sx.odds_away, match.id]);
-        const base = baseProbs.get(match.id);
+        await dbRun('UPDATE matches SET odds_home=$1, odds_draw=$2, odds_away=$3 WHERE id=$4', [sx.odds_home, sx.odds_draw, sx.odds_away, m.id]);
+        const base = baseProbs.get(m.id);
         if (base) {
           const total = 1/sx.odds_home + 1/sx.odds_draw + 1/sx.odds_away;
           base.h = (1/sx.odds_home)/total;
           base.d = (1/sx.odds_draw)/total;
           base.a = (1/sx.odds_away)/total;
         }
-        console.log(`  SX Bet sync: ${home} vs ${away} → ${sx.odds_home}/${sx.odds_draw}/${sx.odds_away}`);
+        console.log(`  SX Bet sync: ${m.home_team} vs ${m.away_team} → ${sx.odds_home}/${sx.odds_draw}/${sx.odds_away}`);
       } catch (e) {}
     }
   } catch (e) {

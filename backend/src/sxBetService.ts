@@ -62,14 +62,18 @@ interface SxEvent {
 }
 
 let cached: SxEvent[] | null = null;
+let lastFetch = 0;
+const CACHE_TTL = 120_000;
 
 async function fetchAllEvents(): Promise<SxEvent[]> {
-  if (cached) return cached;
+  const now = Date.now();
+  if (cached && now - lastFetch < CACHE_TTL) return cached;
   const res = await fetch(`${SX_BASE}/markets/active?sportIds=5&limit=500`, { signal: AbortSignal.timeout(15000) });
   const j: any = await res.json();
   if (j.status !== 'success') throw new Error('SX markets fail');
+  const entries: any[] = j.data.markets ?? j.data ?? [];
   const map = new Map<string, SxEvent>();
-  for (const m of j.data) {
+  for (const m of entries) {
     if (m.type !== 1) continue;
     const eid = m.sportXeventId;
     if (!eid) continue;
@@ -77,6 +81,7 @@ async function fetchAllEvents(): Promise<SxEvent[]> {
     map.get(eid)!.mHashes.set(m.outcomeOneName, m.marketHash);
   }
   cached = Array.from(map.values()).filter(e => e.mHashes.size >= 2);
+  lastFetch = Date.now();
   return cached;
 }
 
