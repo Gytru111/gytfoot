@@ -62,13 +62,20 @@ async function seedMatches() {
   };
 
   const M = (hR: number, aR: number): {ch: number; cd: number; ca: number} => {
-    const drawConst = 35;
-    const t = hR + aR + drawConst;
+    const hElo = hR * 10, aElo = aR * 10;
+    const eH = 1 / (1 + Math.pow(10, (aElo - hElo) / 400));
+    const eA = 1 / (1 + Math.pow(10, (hElo - aElo) / 400));
+    const spread = Math.abs(hElo - aElo);
+    const pDraw = Math.max(0.08, 0.28 - spread / 4000);
+    const scale = 1 - pDraw;
+    const pH = (eH / (eH + eA)) * scale;
+    const pA = (eA / (eH + eA)) * scale;
     const margin = 1.06;
-    const hO = +(1 / ((hR / t) * margin)).toFixed(2);
-    const dO = +(1 / ((drawConst / t) * margin)).toFixed(2);
-    const aO = +(1 / ((aR / t) * margin)).toFixed(2);
-    return {ch: Math.max(1.01, hO), cd: Math.max(1.01, dO), ca: Math.max(1.01, aO)};
+    return {
+      ch: Math.max(1.01, +(1 / (pH * margin)).toFixed(2)),
+      cd: Math.max(1.01, +(1 / (pDraw * margin)).toFixed(2)),
+      ca: Math.max(1.01, +(1 / (pA * margin)).toFixed(2)),
+    };
   };
 
   const matchDefs: any[] = [
